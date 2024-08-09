@@ -13,6 +13,7 @@ const timerMinutes = document.querySelector('span[data-minutes]');
 const timerSeconds = document.querySelector('span[data-seconds]');
 
 let myTimer = null;
+let selectedDate = null;
 buttonStart.disabled = true;
 
 const options = {
@@ -36,44 +37,46 @@ const options = {
         messageLineHeight: '150%',
       });
     } else {
+      selectedDate = selectedDates[0];
       buttonStart.disabled = false;
-      buttonStart.addEventListener('click', () => {
-        buttonStart.disabled = true;
-        myTimer = setInterval(() => {
-          const difference = selectedDates[0].getTime() - new Date().getTime();
-          if (difference < 1000) {
-            clearInterval(myTimer);
-            timerSeconds.textContent = '00';
-          } else {
-            function convertMs(ms) {
-              // Number of milliseconds per unit of time
-              const second = 1000;
-              const minute = second * 60;
-              const hour = minute * 60;
-              const day = hour * 24;
-
-              const days = Math.floor(ms / day);
-              const hours = Math.floor((ms % day) / hour);
-              const minutes = Math.floor(((ms % day) % hour) / minute);
-              const seconds = Math.floor(
-                (((ms % day) % hour) % minute) / second
-              );
-
-              return { days, hours, minutes, seconds };
-            }
-            timerDays.textContent = addZero(convertMs(difference).days);
-            timerHours.textContent = addZero(convertMs(difference).hours);
-            timerMinutes.textContent = addZero(convertMs(difference).minutes);
-            timerSeconds.textContent = addZero(convertMs(difference).seconds);
-
-            function addZero(value) {
-              return value.toString().padStart(2, '0');
-            }
-          }
-        }, 1000);
-      });
     }
   },
 };
+
+buttonStart.addEventListener('click', () => {
+  if (selectedDate) {
+    buttonStart.disabled = true;
+    myTimer = setInterval(() => {
+      const difference = selectedDate.getTime() - new Date().getTime();
+      if (difference < 1000) {
+        clearInterval(myTimer);
+        timerSeconds.textContent = '00';
+      } else {
+        timerDays.textContent = addZero(convertMs(difference).days);
+        timerHours.textContent = addZero(convertMs(difference).hours);
+        timerMinutes.textContent = addZero(convertMs(difference).minutes);
+        timerSeconds.textContent = addZero(convertMs(difference).seconds);
+      }
+    }, 1000);
+  }
+});
+
+function convertMs(ms) {
+  const second = 1000;
+  const minute = second * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+
+  const days = Math.floor(ms / day);
+  const hours = Math.floor((ms % day) / hour);
+  const minutes = Math.floor(((ms % day) % hour) / minute);
+  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+
+  return { days, hours, minutes, seconds };
+}
+
+function addZero(value) {
+  return value.toString().padStart(2, '0');
+}
 
 flatpickr(inputData, options);
